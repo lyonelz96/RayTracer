@@ -1,5 +1,5 @@
 #include "Sphere.h"
-
+#include <iostream>
 
 
 Sphere::Sphere()
@@ -69,4 +69,15 @@ void Sphere::setSpecularColor(glm::vec3 specularColor)
 void Sphere::setShininess(float shininess)
 {
 	this->shininess = shininess;
+}
+
+void Sphere::toString()
+{
+	std::cout << "This Sphere has: " << std::endl;
+	std::cout << "Position: " << position.x << " " << position.y << " " << position.z << std::endl;
+	std::cout << "Radius: " << radius << std::endl;
+	std::cout << "Ambient Color: " << ambientColor.x << " " << ambientColor.y << " " << ambientColor.z << std::endl;
+	std::cout << "Diffuse Color: " << diffuseColor.x << " " << diffuseColor.y << " " << diffuseColor.z << std::endl;
+	std::cout << "Specular Color: " << specularColor.x << " " << specularColor.y << " " << specularColor.z << std::endl;
+	std::cout << "Shininess: " << shininess << std::endl;
 }

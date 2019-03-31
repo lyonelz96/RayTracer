@@ -1,5 +1,5 @@
 #include "Mesh.h"
-
+#include <iostream>
 
 
 Mesh::Mesh()
@@ -59,4 +59,14 @@ void Mesh::setSpecularColor(glm::vec3 specularColor)
 void Mesh::setShininess(float shininess)
 {
 	this->shininess = shininess;
+}
+
+void Mesh::toString()
+{
+	std::cout << "This Mesh has: " << std::endl;
+	std::cout << "FileName: " << fileName << std::endl;
+	std::cout << "Ambient Color: " << ambientColor.x << " " << ambientColor.y << " " << ambientColor.z << std::endl;
+	std::cout << "Diffuse Color: " << diffuseColor.x << " " << diffuseColor.y << " " << diffuseColor.z << std::endl;
+	std::cout << "Specular Color: " << specularColor.x << " " << specularColor.y << " " << specularColor.z << std::endl;
+	std::cout << "Shininess: " << shininess << std::endl;
 }

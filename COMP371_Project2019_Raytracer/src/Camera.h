@@ -25,5 +25,7 @@ public:
 	void setFocalLength(float focalLength);
 	void setAspectRatio(float aspectRatio);
 
+	void toString();
+
 };
 

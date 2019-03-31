@@ -1,5 +1,5 @@
 #include "Camera.h"
-
+#include <iostream>
 
 
 Camera::Camera()
@@ -49,4 +49,13 @@ void Camera::setFocalLength(float focalLength)
 void Camera::setAspectRatio(float aspectRatio)
 {
 	this->aspectRatio = aspectRatio;
+}
+
+void Camera::toString()
+{
+	std::cout << "This camera has: " << std::endl;
+	std::cout << "Position: " << position.x << " " << position.y << " " << position.z << std::endl;
+	std::cout << "FOV: " << theta << std::endl;
+	std::cout << "Focal Length: " << focalLength << std::endl;
+	std::cout << "Aspect Ratio: " << aspectRatio << std::endl;
 }

@@ -21,5 +21,6 @@ public:
 	void setPosition(glm::vec3 position);
 	void setDiffuseColor(glm::vec3 diffuseColor);
 	void setSpecularColor(glm::vec3 specularColor);
-};
 
+	void toString();
+};

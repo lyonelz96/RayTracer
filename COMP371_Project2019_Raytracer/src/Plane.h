@@ -31,5 +31,7 @@ public:
 	void setSpecularColor(glm::vec3 specularColor);
 	void setShininess(float shininess);
 
+	void toString();
+
 };
 

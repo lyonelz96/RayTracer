@@ -1,5 +1,5 @@
 #include "Plane.h"
-
+#include <iostream>
 
 
 Plane::Plane()
@@ -69,4 +69,15 @@ void Plane::setSpecularColor(glm::vec3 specularColor)
 void Plane::setShininess(float shininess)
 {
 	this->shininess = shininess;
+}
+
+void Plane::toString()
+{
+	std::cout << "This Plane has: " << std::endl;
+	std::cout << "Normal: " << normal.x << " " << normal.y << " " << normal.z << std::endl;
+	std::cout << "Position: " << position.x << " " << position.y << " " << position.z << std::endl;
+	std::cout << "Ambient Color: " << ambientColor.x << " " << ambientColor.y << " " << ambientColor.z << std::endl;
+	std::cout << "Diffuse Color: " << diffuseColor.x << " " << diffuseColor.y << " " << diffuseColor.z << std::endl;
+	std::cout << "Specular Color: " << specularColor.x << " " << specularColor.y << " " << specularColor.z << std::endl;
+	std::cout << "Shininess: " << shininess << std::endl;
 }
