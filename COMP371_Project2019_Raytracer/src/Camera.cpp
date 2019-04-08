@@ -16,9 +16,9 @@ glm::vec3 Camera::getPosition()
 	return position;
 }
 
-float Camera::getTheta()
+float Camera::getFOV()
 {
-	return theta;
+	return fov;
 }
 
 float Camera::getFocalLength()
@@ -36,9 +36,9 @@ void Camera::setPosition(glm::vec3 position)
 	this->position = position;
 }
 
-void Camera::setTheta(float theta)
+void Camera::setFOV(float fov)
 {
-	this->theta = theta;
+	this->fov = fov;
 }
 
 void Camera::setFocalLength(float focalLength)
@@ -53,9 +53,9 @@ void Camera::setAspectRatio(float aspectRatio)
 
 void Camera::toString()
 {
-	std::cout << "This camera has: " << std::endl;
+	std::cout << "This Camera has: " << std::endl;
 	std::cout << "Position: " << position.x << " " << position.y << " " << position.z << std::endl;
-	std::cout << "FOV: " << theta << std::endl;
+	std::cout << "FOV: " << fov << std::endl;
 	std::cout << "Focal Length: " << focalLength << std::endl;
 	std::cout << "Aspect Ratio: " << aspectRatio << std::endl;
 }

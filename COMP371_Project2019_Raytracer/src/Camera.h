@@ -6,7 +6,7 @@ class Camera
 {
 private:
 	glm::vec3 position;
-	float theta;
+	float fov;
 	float focalLength;
 	float aspectRatio;
 public:
@@ -15,13 +15,13 @@ public:
 
 	//Getters
 	glm::vec3 getPosition();
-	float getTheta();
+	float getFOV();
 	float getFocalLength();
 	float getAspectRatio();
 
 	//Setters
 	void setPosition(glm::vec3 position);
-	void setTheta(float theta);
+	void setFOV(float fov);
 	void setFocalLength(float focalLength);
 	void setAspectRatio(float aspectRatio);
 

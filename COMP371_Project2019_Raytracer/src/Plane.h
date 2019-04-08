@@ -1,6 +1,11 @@
 #pragma once
 
 #include "glm.hpp"
+#include "Ray.h"
+#include "Light.h"
+#include <vector>
+class Sphere;
+
 
 class Plane
 {
@@ -14,6 +19,9 @@ private:
 public:
 	Plane();
 	~Plane();
+
+	bool doesRayIntersect(Ray& ray, float& t);
+	glm::vec3 calcColor(Ray& ray, Light& light, Plane& plane, std::vector<Sphere*>& spheres, float& t);
 
 	//Getters
 	glm::vec3 getNormal();
