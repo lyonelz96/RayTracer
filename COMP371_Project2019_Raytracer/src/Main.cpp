@@ -35,7 +35,7 @@ int main() {
 	std::vector<Light*> lights;
 	std::vector<Sphere*> spheres;
 
-	readScene("scenes\\mesh_scene2.txt", *camera, *mesh, *plane, lights, spheres);
+	readScene("scenes\\scene2.txt", *camera, *mesh, *plane, lights, spheres);
 
 	//camera->setFocalLength(camera->getFocalLength() / 4);
 	//------------------------CImg Stuff------------------------
