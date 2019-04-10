@@ -34,7 +34,7 @@ bool Plane::doesRayIntersect(Ray& ray, float& t)
 	
 }
 
-glm::vec3 Plane::calcColor(Ray& ray, Light& light, Plane& plane, std::vector<Sphere*>& spheres, float& t)
+glm::vec3 Plane::calcColor(Ray& ray, Light& light, Plane& plane, std::vector<Sphere*>& spheres, Mesh& mesh, float& t)
 {
 	//First we figure out if this point is in shadow or not
 	glm::vec3 lightDir = (light.getPosition() - ray.calcPointAlongRay(t));
@@ -52,6 +52,13 @@ glm::vec3 Plane::calcColor(Ray& ray, Light& light, Plane& plane, std::vector<Sph
 	}
 
 	if ((&plane != this) && t <= lightDistance && plane.doesRayIntersect(shadowRay, temp) ) {
+		return this->getAmbientColor();
+	}
+
+	std::vector<int> indices = mesh.getIndices();
+	std::vector<glm::vec3> vertices = mesh.getVertices();
+
+	if (t <= lightDistance && mesh.doesRayIntersect(shadowRay, indices, vertices, temp)) {
 		return this->getAmbientColor();
 	}
 

@@ -5,6 +5,7 @@
 #include "Light.h"
 #include <vector>
 class Sphere;
+class Mesh;
 
 
 class Plane
@@ -21,7 +22,7 @@ public:
 	~Plane();
 
 	bool doesRayIntersect(Ray& ray, float& t);
-	glm::vec3 calcColor(Ray& ray, Light& light, Plane& plane, std::vector<Sphere*>& spheres, float& t);
+	glm::vec3 calcColor(Ray& ray, Light& light, Plane& plane, std::vector<Sphere*>& spheres, Mesh& mesh, float& t);
 
 	//Getters
 	glm::vec3 getNormal();

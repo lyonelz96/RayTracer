@@ -1,5 +1,6 @@
 #include "Sphere.h"
 #include "Plane.h"
+#include"Mesh.h"
 #include <iostream>
 #include <vector>
 
@@ -31,20 +32,21 @@ bool Sphere::doesRayIntersect(Ray& ray, float &t)
 	float c = glm::dot(sphereOC, sphereOC) - (this->getRadius() * this->getRadius()); //(x0-xc)^2 + (y0-yd)^2 + (z0-zd)^2 - r^2
 	float discriminant = (b * b) - (4 * a*c);
 
-	if (discriminant < 0) // No roots
+	if (discriminant < 0.0) { // No roots
 		return false;
+	}
 	else {
 		//Either one or two roots
 		float t0 = (-b - std::sqrt(discriminant)) / (2 * a);
 		float t1 = (-b + std::sqrt(discriminant)) / (2 * a);
 
-		if (t0 > 0 && t1 > 0) {
+		if (t0 > 0.0 && t1 > 0.0) {
 			t = std::fminf(t0, t1); // Get the closest intersection point
 		}
-		else if (t0 < 0) {
+		else if (t0 < 0.0) {
 			t = t1; 
 		}
-		else if (t1 < 0) {
+		else if (t1 < 0.0) {
 			t = t0;
 		} 
 		
@@ -53,7 +55,7 @@ bool Sphere::doesRayIntersect(Ray& ray, float &t)
 	}
 }
 
-glm::vec3 Sphere::calcColor(Ray& ray, Light& light, Plane& plane, std::vector<Sphere*>& spheres, float& t)
+glm::vec3 Sphere::calcColor(Ray& ray, Light& light, Plane& plane, std::vector<Sphere*>& spheres, Mesh& mesh, float& t)
 {
 	//First we figure out if this point is in shadow or not
 	glm::vec3 lightDir = (light.getPosition() - ray.calcPointAlongRay(t));
@@ -70,6 +72,13 @@ glm::vec3 Sphere::calcColor(Ray& ray, Light& light, Plane& plane, std::vector<Sp
 	}
 	
 	if (t <= lightDistance && plane.doesRayIntersect(shadowRay, temp) ) {
+		return this->getAmbientColor();
+	}
+
+	std::vector<int> indices = mesh.getIndices();
+	std::vector<glm::vec3> vertices = mesh.getVertices();
+
+	if (t <= lightDistance && mesh.doesRayIntersect(shadowRay, indices, vertices, temp)) {
 		return this->getAmbientColor();
 	}
 

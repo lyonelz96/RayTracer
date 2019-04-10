@@ -3,6 +3,7 @@
 #include "glm.hpp"
 #include "Ray.h"
 #include "Light.h"
+#include "Mesh.h"
 #include <vector>
 #include "Plane.h"
 
@@ -21,7 +22,7 @@ public:
 
 
 	bool doesRayIntersect(Ray& ray, float &t);
-	glm::vec3 calcColor(Ray& ray, Light& light,Plane& plane,std::vector<Sphere*>& spheres, float& t );
+	glm::vec3 calcColor(Ray& ray, Light& light,Plane& plane,std::vector<Sphere*>& spheres,Mesh& mesh, float& t );
 
 	//Getters
 	glm::vec3 getPosition();

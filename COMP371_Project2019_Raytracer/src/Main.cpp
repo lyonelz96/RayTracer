@@ -5,10 +5,12 @@
 #include "Light.h"
 #include "Ray.h"
 #include "CImg.h"
+#include "IndexObjLoader.h"
 #include <fstream>
 #include <iostream>
 #include <string>
 #include <vector>
+
 
 
 
@@ -37,7 +39,23 @@ int main() {
 
 	readScene("scenes\\scene2.txt", *camera, *mesh, *plane, lights, spheres);
 
-	//camera->setFocalLength(camera->getFocalLength() / 4);
+	//Getting the information from the .obj file if any.
+	std::vector<int> indices;
+	std::vector<glm::vec3> vertices;
+	std::vector<glm::vec3> normals;
+	std::vector<glm::vec2> UVs;
+	if (mesh->getFileName() != "") {
+		std::string fileNameS = "scenes\\" + mesh->getFileName();
+		const char* fileName = fileNameS.c_str();
+		loadOBJ(fileName, indices, vertices, normals, UVs);
+	}
+
+	mesh->setIndices(indices);
+	mesh->setVertices(vertices);
+	mesh->setNormals(normals);
+	mesh->setUVS(UVs);
+	
+	//camera->setFocalLength(camera->getFocalLength() / 2);
 	//------------------------CImg Stuff------------------------
 
 	int height = (2 *(std::tan((glm::radians(camera->getFOV() / 2))) * camera->getFocalLength()));
@@ -137,13 +155,31 @@ int main() {
 				}
 			}
 
+			//MESH
+			if (mesh->doesRayIntersect(*ray, indices, vertices, t)) {
+
+				if (firstObjectIntersected == false) {
+					closestObject.distance = t;
+					closestObject.index = -1;
+					closestObject.type = "Mesh";
+					firstObjectIntersected = true;
+				}
+				else {
+					if (t < closestObject.distance) {
+						closestObject.distance = t;
+						closestObject.index = -1;
+						closestObject.type = "Mesh";
+					}
+				}
+			}
+
 
 			//Color calculation for closest object for current pixel
 			if (closestObject.type == "Sphere") {
 				glm::vec3 spherePixelColor = glm::vec3(0.0);
 
 				for (int i = 0; i < lights.size(); i++) {
-					spherePixelColor += spheres[closestObject.index]->calcColor(*ray, *lights[i], *plane, spheres, closestObject.distance);
+					spherePixelColor += spheres[closestObject.index]->calcColor(*ray, *lights[i], *plane, spheres, *mesh, closestObject.distance);
 				}
 
 				image(x, y, 0) = spherePixelColor.x * 255.0f;
@@ -154,12 +190,23 @@ int main() {
 				glm::vec3 planePixelColor = glm::vec3(0.0);
 
 				for (int i = 0; i < lights.size(); i++) {
-					planePixelColor += plane->calcColor(*ray, *lights[i], *plane, spheres, closestObject.distance);
+					planePixelColor += plane->calcColor(*ray, *lights[i], *plane, spheres, *mesh, closestObject.distance);
 				}
 
 				image(x, y, 0) = planePixelColor.x * 255.0f;
 				image(x, y, 1) = planePixelColor.y * 255.0f;
 				image(x, y, 2) = planePixelColor.z * 255.0f;
+			}
+			else if (closestObject.type == "Mesh") {
+				glm::vec3 meshPixelColor = glm::vec3(0.0f);
+
+				for (int i = 0; i < lights.size(); i++) {
+					meshPixelColor += mesh->calcColor(*ray, *lights[i], *plane, spheres, *mesh, closestObject.distance);
+				}
+
+				image(x, y, 0) = meshPixelColor.x * 255.0f;
+				image(x, y, 1) = meshPixelColor.y * 255.0f;
+				image(x, y, 2) = meshPixelColor.z * 255.0f;
 			}
 			else {
 				image(x, y, 0) = 0.0f;
@@ -216,6 +263,61 @@ int main() {
 		lights[i]->toString();
 		std::cout << std::endl;
 	}
+
+	std::cout << std::endl;
+
+	//MESH INFORMATION (VERTICES, NORMALS, INDICES,UVS)
+	int x = 0;
+	while (x != 1) {
+		std::cout << mesh->getFileName() << std::endl;
+		for (int i = 0; i < indices.size(); i++) {
+			std::cout << indices[i] << std::endl;
+			std::cout << indices.size() << std::endl;
+			std::cout << vertices.size() << std::endl;
+			std::cout << normals.size() << std::endl;
+			std::cout << UVs.size() << std::endl;
+
+			std::cout<< "" << std::endl;
+			std::cout<< "" << std::endl;
+			std::cout<< "" << std::endl;
+
+			std::cout << vertices[i].x << " " << vertices[i].y << " " << vertices[i].z << std::endl;
+			std::cout << normals[i].x << " " << normals[i].y << " " << normals[i].z << std::endl;
+			std::cout << UVs[i].x << " " << UVs[i].y << std::endl;
+
+			std::cin >> x;
+		}
+
+	}
+
+	//MORE MESH STUFF
+	std::cout << indices.size() << std::endl;
+	std::cout << vertices.size() << std::endl;
+	std::cout << normals.size() << std::endl;
+	std::cout << UVs.size() << std::endl;
+	int j = 0;
+	for (int i = 0; i < indices.size(); i+=3) {
+
+		std::cout << "Face: " << j << std::endl;
+		j++;
+
+		std::cout << "index0: " << indices[i] << std::endl;
+		std::cout << "index1: " << indices[i + 1] << std::endl;
+		std::cout << "index2: " << indices[i + 2] << std::endl;
+
+		std::cout << std::endl;
+
+		std::cout << "v0: " << vertices[indices[i]].x << ", " <<vertices[indices[i]].y << ", " << vertices[indices[i]].z << std::endl;
+		std::cout << "v1: " << vertices[indices[i+1]].x << ", " <<  vertices[indices[i+1]].y << ", " << vertices[indices[i+1]].z << std::endl;
+		std::cout << "v2: " << vertices[indices[i+2]].x << ", " << vertices[indices[i+2]].y << ", " << vertices[indices[i+2]].z << std::endl;
+		glm::vec3 v0v1 = vertices[indices[i]] - vertices[indices[i + 1]];
+		glm::vec3 v0v2 = vertices[indices[i]] - vertices[indices[i + 2]];
+		glm::vec3 normal = glm::normalize(glm::cross(v0v1, v0v2));
+		std::cout << "Normal: " << normal.x << ", " << normal.y << ", " << normal.z << std::endl;
+		std::cout << std::endl;
+	}
+	int x = 0;
+	std::cin >> x;
 
 	*/
 	//---------------------------DEBUGGING PURPOSES---------------------------
