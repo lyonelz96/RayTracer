@@ -21,13 +21,14 @@ private:
 	std::vector<glm::vec3> vertices;
 	std::vector<glm::vec3> normals;
 	std::vector<glm::vec2> UVs;
+	glm::vec3 intersectNormal;
 
 public:
 	Mesh();
 	~Mesh();
 
-	bool doesRayIntersect(Ray& ray, std::vector<int>& indices, std::vector<glm::vec3>& vertices, float& t);
-	glm::vec3 calcColor(Ray& ray, Light& light, Plane& plane, std::vector<Sphere*>& spheres, Mesh& mesh, float& t);
+	bool doesRayIntersect(Ray& ray, std::vector<int>& indices, std::vector<glm::vec3>& vertices, float& t, float& closestIndex);
+	glm::vec3 calcColor(Ray& ray, Light& light, Plane& plane, std::vector<Sphere*>& spheres, Mesh& mesh, float& t, float& closestIndex);
 
 	//Getters
 	std::string getFileName();
@@ -38,6 +39,7 @@ public:
 	std::vector<glm::vec3> getVertices();
 	std::vector<glm::vec3> getNormals();
 	std::vector<glm::vec2> getUVS();
+	glm::vec3 getIntersectNormal();
 	float getShininess();
 
 	//Setters
@@ -50,6 +52,7 @@ public:
 	void setVertices(std::vector<glm::vec3> vertices);
 	void setNormals(std::vector<glm::vec3> normals);
 	void setUVS(std::vector<glm::vec2> UVs);
+	void setIntersectNormal(glm::vec3 intersectNormal);
 
 	void toString();
 };

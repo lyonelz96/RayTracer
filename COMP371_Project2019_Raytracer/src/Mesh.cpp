@@ -12,15 +12,35 @@ Mesh::~Mesh()
 {
 }
 
-bool Mesh::doesRayIntersect(Ray& ray,std::vector<int>& indices, std::vector<glm::vec3>& vertices, float& t)
+bool Mesh::doesRayIntersect(Ray& ray,std::vector<int>& indices, std::vector<glm::vec3>& vertices, float& t, float& closestIndex)
 {
 
 	bool firstTriangleIntersected = false;
 	float closestDistance = 0.0;
-	float temp = 0.0;
+	float temp = t;
+	glm::vec3 normal = glm::vec3(0.0f);
+	float closestStartingIndex = -1;
 
 	//For every triangle in the mesh we need to test if the ray intersects, then we pick the triangle that is closest
 	for (int i = 0; i < indices.size(); i+=3) {
+		
+		if (firstTriangleIntersected == false && i == (indices.size() - 3)) {
+			return false;
+		}
+		else if (firstTriangleIntersected && i == (indices.size() - 3)) {
+			t = closestDistance;
+			closestIndex = closestStartingIndex;
+			/*
+			std::cout << "The closest Triangle StartingIndex is: " << closestStartingIndex << std::endl;
+			std::cout << vertices[indices[closestStartingIndex]].x << ", " << vertices[indices[closestStartingIndex]].y << ", " << vertices[indices[closestStartingIndex]].z << std::endl;
+			std::cout << vertices[indices[closestStartingIndex + 1]].x << ", " << vertices[indices[closestStartingIndex + 1]].y << ", " << vertices[indices[closestStartingIndex + 1]].z << std::endl;
+			std::cout << vertices[indices[closestStartingIndex + 2]].x << ", " << vertices[indices[closestStartingIndex + 2]].y << ", " << vertices[indices[closestStartingIndex + 2]].z << std::endl;
+			std::cout << "And their normal is: " << normal.x << ", " << normal.y << ", " << normal.z << std::endl;
+			std::cout << std::endl;
+			*/
+			return true;
+		}
+		
 		glm::vec3 v0 = vertices[indices[i]];
 		glm::vec3 v1 = vertices[indices[i + 1]];
 		glm::vec3 v2 = vertices[indices[i + 2]];
@@ -28,21 +48,20 @@ bool Mesh::doesRayIntersect(Ray& ray,std::vector<int>& indices, std::vector<glm:
 		//Computing the planes normal
 		glm::vec3 v0v1 = v1 - v0;
 		glm::vec3 v0v2 = v2 - v0;
-		glm::vec3 normal = glm::cross(v0v1, v0v2);
-		float normalLength = glm::length(normal);
+		normal = glm::normalize(glm::cross(v0v1, v0v2));
 
 		//Check if ray and plane are parallel
 		if (glm::dot(normal, ray.getDirection()) == 0)
 			continue;
 
-		t = (glm::dot(normal, ray.getOrigin()) + glm::dot(normal, v0)) / glm::dot(normal, ray.getDirection());
+		temp = (glm::dot(normal,v0 - ray.getOrigin())) / glm::dot(normal, ray.getDirection());
 
 		//Triangle is behind
-		if (t < 0)
+		if (temp < 0)
 		  continue;
 
 		//Intersection Point
-		glm::vec3 intersectionPoint = ray.getOrigin() + t * ray.getDirection();
+		glm::vec3 intersectionPoint = ray.calcPointAlongRay(temp);
 
 		//Inside-Out Test
 		glm::vec3 perpendicularToPlane;
@@ -75,36 +94,53 @@ bool Mesh::doesRayIntersect(Ray& ray,std::vector<int>& indices, std::vector<glm:
 			continue;
 
 		if (firstTriangleIntersected == false) {
-			closestDistance = t;
+			closestDistance = temp;
 			firstTriangleIntersected = true;
+			closestStartingIndex = i;
+			/*
+			std::cout << "The first set of vertices of the closest triangle first intersected is: StartingIndex:" << i << std::endl;
+			std::cout << vertices[indices[i]].x << ", " << vertices[indices[i]].y << ", " << vertices[indices[i]].z << std::endl;
+			std::cout << vertices[indices[i+1]].x << ", " << vertices[indices[i + 1]].y << ", " << vertices[indices[i + 1]].z << std::endl;
+			std::cout << vertices[indices[i + 2]].x << ", " << vertices[indices[i + 2]].y << ", " << vertices[indices[i + 2]].z << std::endl;
+			std::cout << "And their normal is: " << normal.x << ", " << normal.y << ", " << normal.z << std::endl;
+			std::cout << std::endl;
+			*/
 		}
 		else {
-			if (t < closestDistance) {
-				closestDistance = t;
+			if (temp < closestDistance) {
+				closestDistance = temp;
+				closestStartingIndex = i;
+				/*
+				std::cout << "The first vertex of the closest triangle that is not the first is: StartingIndex " << i << std::endl;
+				std::cout << vertices[indices[closestStartingIndex]].x << ", " << vertices[indices[closestStartingIndex]].y << ", " << vertices[indices[closestStartingIndex]].z << std::endl;
+				std::cout << vertices[indices[closestStartingIndex + 1]].x << ", " << vertices[indices[closestStartingIndex + 1]].y << ", " << vertices[indices[closestStartingIndex + 1]].z << std::endl;
+				std::cout << vertices[indices[closestStartingIndex + 2]].x << ", " << vertices[indices[closestStartingIndex + 2]].y << ", " << vertices[indices[closestStartingIndex + 2]].z << std::endl;
+				std::cout << "And their normal is: " << normal.x << ", " << normal.y << ", " << normal.z << std::endl;
+				std::cout << std::endl;
+				*/
 			}
 		}
 
 	}
 
-	if (firstTriangleIntersected == false) {
-		return false;
-	}
-	else {
-		t = closestDistance;
-		return true;
-	}
-	
+	return false;
 	
 }
 
-glm::vec3 Mesh::calcColor(Ray& ray, Light& light, Plane& plane, std::vector<Sphere*>& spheres, Mesh& mesh, float& t)
+glm::vec3 Mesh::calcColor(Ray& ray, Light& light, Plane& plane, std::vector<Sphere*>& spheres, Mesh& mesh, float& t, float& closestIndex)
 {
 	//First we figure out if this point is in shadow or not
 	glm::vec3 lightDir = (light.getPosition() - ray.calcPointAlongRay(t));
 	float lightDistance = glm::pow(glm::length(lightDir), 2.0);
+	glm::vec3 v0 = this->getVertices()[this->getIndices()[closestIndex]];
+	glm::vec3 v1 = this->getVertices()[this->getIndices()[closestIndex + 1]];
+	glm::vec3 v2 = this->getVertices()[this->getIndices()[closestIndex + 2]];
+	glm::vec3 v0v1 = v1 - v0;
+	glm::vec3 v0v2 = v2 - v0;
+	glm::vec3 normal = glm::normalize(glm::cross(v0v1, v0v2));
 
 	Ray shadowRay;
-	shadowRay.setOrigin(ray.calcPointAlongRay(t));
+	shadowRay.setOrigin(ray.calcPointAlongRay(t) + (normal * (float)1e-2)); //Origin moved up with bias, to avoid Shadow Acne
 	shadowRay.setDirection(lightDir);
 
 	float temp = t;
@@ -117,32 +153,31 @@ glm::vec3 Mesh::calcColor(Ray& ray, Light& light, Plane& plane, std::vector<Sphe
 		return this->getAmbientColor();
 	}
 
-	if ((&mesh != this) && t <= lightDistance && mesh.doesRayIntersect(shadowRay, indices, vertices, temp)) {
+	std::vector<int> indices = mesh.getIndices();
+	std::vector<glm::vec3> vertices = mesh.getVertices();
+	float closestIndexDummy = -1;
+
+	if (t <= lightDistance && mesh.doesRayIntersect(shadowRay, indices, vertices, temp, closestIndexDummy)) {
 		return this->getAmbientColor();
 	}
-
+	
 	//Ambient
-	glm::vec3 ambient = this->ambientColor;
+	glm::vec3 ambient = this->getAmbientColor();
 
-	/*
 	//Diffuse
-	glm::vec3 normal = glm::normalize(ray.calcPointAlongRay(t) - this->getPosition());
+	std::cout << std::endl;
 	lightDir = glm::normalize(lightDir);
 	float diffuseStrength = glm::max(glm::dot(normal, lightDir), 0.0f);
 	glm::vec3 diffuse = (diffuseStrength * this->getDiffuseColor()) * light.getDiffuseColor();
-	*/
-
-	/*
+	
 	//Specular
 	glm::vec3 viewDir = glm::normalize(ray.getOrigin() - ray.calcPointAlongRay(t));
 	glm::vec3 reflectDir = glm::normalize(glm::reflect(-lightDir, normal));
 	float specularStrength = glm::pow(glm::max(glm::dot(viewDir, reflectDir), 0.0f), this->getShininess());
 	glm::vec3 specular = (specularStrength * this->getSpecularColor()) * light.getSpecularColor();
-	*/
+	
 
-
-	glm::vec3 result = ambient;
-
+	glm::vec3 result = ambient + diffuse + specular;
 
 	return result;
 }
@@ -185,6 +220,11 @@ std::vector<glm::vec3> Mesh::getNormals()
 std::vector<glm::vec2> Mesh::getUVS()
 {
 	return UVs;
+}
+
+glm::vec3 Mesh::getIntersectNormal()
+{
+	return intersectNormal;
 }
 
 float Mesh::getShininess()
@@ -235,6 +275,11 @@ void Mesh::setNormals(std::vector<glm::vec3> normals)
 void Mesh::setUVS(std::vector<glm::vec2> UVs)
 {
 	this->UVs = UVs;
+}
+
+void Mesh::setIntersectNormal(glm::vec3 intersectNormal)
+{
+	this->intersectNormal = glm::normalize(intersectNormal);
 }
 
 void Mesh::toString()

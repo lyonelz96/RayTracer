@@ -37,7 +37,7 @@ int main() {
 	std::vector<Light*> lights;
 	std::vector<Sphere*> spheres;
 
-	readScene("scenes\\scene2.txt", *camera, *mesh, *plane, lights, spheres);
+	readScene("scenes\\mesh_scene2.txt", *camera, *mesh, *plane, lights, spheres);
 
 	//Getting the information from the .obj file if any.
 	std::vector<int> indices;
@@ -117,6 +117,7 @@ int main() {
 			closestObject.index = -1;
 			closestObject.type = "";
 
+			
 			//SPHERES
 			for (int i = 0; i < spheres.size(); i++) {
 				if (spheres[i]->doesRayIntersect(*ray, t)) {
@@ -154,9 +155,11 @@ int main() {
 					}
 				}
 			}
+			
 
 			//MESH
-			if (mesh->doesRayIntersect(*ray, indices, vertices, t)) {
+			float closestIndex = -1;
+			if (mesh->doesRayIntersect(*ray, indices, vertices, t, closestIndex)) {
 
 				if (firstObjectIntersected == false) {
 					closestObject.distance = t;
@@ -172,8 +175,7 @@ int main() {
 					}
 				}
 			}
-
-
+		
 			//Color calculation for closest object for current pixel
 			if (closestObject.type == "Sphere") {
 				glm::vec3 spherePixelColor = glm::vec3(0.0);
@@ -181,6 +183,8 @@ int main() {
 				for (int i = 0; i < lights.size(); i++) {
 					spherePixelColor += spheres[closestObject.index]->calcColor(*ray, *lights[i], *plane, spheres, *mesh, closestObject.distance);
 				}
+
+				spherePixelColor = glm::clamp(spherePixelColor, 0.0f, 1.0f);
 
 				image(x, y, 0) = spherePixelColor.x * 255.0f;
 				image(x, y, 1) = spherePixelColor.y * 255.0f;
@@ -193,6 +197,8 @@ int main() {
 					planePixelColor += plane->calcColor(*ray, *lights[i], *plane, spheres, *mesh, closestObject.distance);
 				}
 
+				planePixelColor = glm::clamp(planePixelColor, 0.0f, 1.0f);
+
 				image(x, y, 0) = planePixelColor.x * 255.0f;
 				image(x, y, 1) = planePixelColor.y * 255.0f;
 				image(x, y, 2) = planePixelColor.z * 255.0f;
@@ -201,8 +207,10 @@ int main() {
 				glm::vec3 meshPixelColor = glm::vec3(0.0f);
 
 				for (int i = 0; i < lights.size(); i++) {
-					meshPixelColor += mesh->calcColor(*ray, *lights[i], *plane, spheres, *mesh, closestObject.distance);
+					meshPixelColor += mesh->calcColor(*ray, *lights[i], *plane, spheres, *mesh, closestObject.distance, closestIndex);
 				}
+
+				meshPixelColor = glm::clamp(meshPixelColor, 0.0f, 1.0f);
 
 				image(x, y, 0) = meshPixelColor.x * 255.0f;
 				image(x, y, 1) = meshPixelColor.y * 255.0f;
@@ -219,7 +227,7 @@ int main() {
 	}
 	
 	//Save out the image in BMP format. Pixel values must be in the range [0,255]
-	image.normalize(0, 255);
+	//image.normalize(0, 255);
 	image.save("render.bmp");
 
 	//Display the rendered image on screen

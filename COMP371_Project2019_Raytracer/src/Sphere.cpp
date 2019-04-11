@@ -30,29 +30,31 @@ bool Sphere::doesRayIntersect(Ray& ray, float &t)
 	float a = glm::dot(ray.getDirection(), ray.getDirection()); //xd^2 + yd^2 + zd^2
 	float b = 2.0 * glm::dot(sphereOC, ray.getDirection()); //2(xd(x0-xc)^2 + yd(y0-yc)^2 + zd(z0-zc)^2
 	float c = glm::dot(sphereOC, sphereOC) - (this->getRadius() * this->getRadius()); //(x0-xc)^2 + (y0-yd)^2 + (z0-zd)^2 - r^2
-	float discriminant = (b * b) - (4 * a*c);
+	float discriminant = (b * b) - (4.0 * a*c);
 
 	if (discriminant < 0.0) { // No roots
 		return false;
 	}
 	else {
 		//Either one or two roots
-		float t0 = (-b - std::sqrt(discriminant)) / (2 * a);
-		float t1 = (-b + std::sqrt(discriminant)) / (2 * a);
+		float t0 = (-b - std::sqrt(discriminant)) / (2.0 * a);
+		float t1 = (-b + std::sqrt(discriminant)) / (2.0 * a);
 
 		if (t0 > 0.0 && t1 > 0.0) {
 			t = std::fminf(t0, t1); // Get the closest intersection point
+			return true;
 		}
-		else if (t0 < 0.0) {
-			t = t1; 
+		else if (t0 < 0.0 && t1 > 0.0) {
+			t = t1;
+			return true;
 		}
-		else if (t1 < 0.0) {
+		else if (t1 < 0.0 && t0 > 0.0) {
 			t = t0;
-		} 
-		
-
-		return true;
+			return true;
+		}
+		return false;
 	}
+
 }
 
 glm::vec3 Sphere::calcColor(Ray& ray, Light& light, Plane& plane, std::vector<Sphere*>& spheres, Mesh& mesh, float& t)
@@ -62,23 +64,24 @@ glm::vec3 Sphere::calcColor(Ray& ray, Light& light, Plane& plane, std::vector<Sp
 	float lightDistance = glm::pow(glm::length(lightDir), 2.0);
 	
 	Ray shadowRay;
-	shadowRay.setOrigin(ray.calcPointAlongRay(t));
+	shadowRay.setOrigin(ray.calcPointAlongRay(t) + ((ray.calcPointAlongRay(t) - this->getPosition()) * (float)1e-2)); //Origin moved up with bias, to avoid Shadow Acne
 	shadowRay.setDirection(lightDir);
 	
 	float temp = t;
 	for (int i = 0; i < spheres.size(); i++) {
-		if (spheres[i] != this && t <= lightDistance && spheres[i]->doesRayIntersect(shadowRay, temp))
+		if (t <= lightDistance && spheres[i]->doesRayIntersect(shadowRay, temp)) 
 			return this->getAmbientColor();
 	}
-	
+
 	if (t <= lightDistance && plane.doesRayIntersect(shadowRay, temp) ) {
 		return this->getAmbientColor();
 	}
 
 	std::vector<int> indices = mesh.getIndices();
 	std::vector<glm::vec3> vertices = mesh.getVertices();
+	float closestIndexDummy = -1;
 
-	if (t <= lightDistance && mesh.doesRayIntersect(shadowRay, indices, vertices, temp)) {
+	if (t <= lightDistance && mesh.doesRayIntersect(shadowRay, indices, vertices, temp, closestIndexDummy)) {
 		return this->getAmbientColor();
 	}
 

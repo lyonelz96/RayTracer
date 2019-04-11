@@ -16,18 +16,19 @@ Plane::~Plane()
 bool Plane::doesRayIntersect(Ray& ray, float& t)
 {
 	//No intersection, ray parallel to plane
-	if (glm::dot(ray.getDirection(), normal) == 0.0) {
+	if (glm::dot(ray.getDirection(), normal) == 0) {
 		return false;
 	}
 
-	
-	t = (glm::dot((position - ray.getOrigin()),glm::normalize(normal))) / (glm::dot(ray.getDirection(), glm::normalize(normal)));
+	float temp = 0.0;
+	temp = (glm::dot((position - ray.getOrigin()),glm::normalize(normal))) / (glm::dot(ray.getDirection(), glm::normalize(normal)));
 
 	//Behind ray origin
-	if (t <= 0) {
+	if (temp < 0.0) {
 		return false;
 	}
 	else {
+		t = temp;
 		return true;
 	}
 
@@ -41,7 +42,7 @@ glm::vec3 Plane::calcColor(Ray& ray, Light& light, Plane& plane, std::vector<Sph
 	float lightDistance = glm::pow(glm::length(lightDir), 2.0);
 
 	Ray shadowRay;
-	shadowRay.setOrigin(ray.calcPointAlongRay(t));
+	shadowRay.setOrigin(ray.calcPointAlongRay(t) + (normal * (float) 1e-2)); //Origin moved up with bias, to avoid Shadow Acne
 	shadowRay.setDirection(lightDir);
 
 	float temp = t;
@@ -51,14 +52,15 @@ glm::vec3 Plane::calcColor(Ray& ray, Light& light, Plane& plane, std::vector<Sph
 		}
 	}
 
-	if ((&plane != this) && t <= lightDistance && plane.doesRayIntersect(shadowRay, temp) ) {
+	if (t <= lightDistance && plane.doesRayIntersect(shadowRay, temp) ) {
 		return this->getAmbientColor();
 	}
 
 	std::vector<int> indices = mesh.getIndices();
 	std::vector<glm::vec3> vertices = mesh.getVertices();
+	float closestIndexDummy = -1;
 
-	if (t <= lightDistance && mesh.doesRayIntersect(shadowRay, indices, vertices, temp)) {
+	if (t <= lightDistance && mesh.doesRayIntersect(shadowRay, indices, vertices, temp, closestIndexDummy)) {
 		return this->getAmbientColor();
 	}
 
