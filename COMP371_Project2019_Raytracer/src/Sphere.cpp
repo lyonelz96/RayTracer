@@ -74,7 +74,7 @@ glm::vec3 Sphere::calcColor(Ray& ray, Light& light, Plane& plane, std::vector<Sp
 	float lightDistance = glm::pow(glm::length(lightDir), 2.0);
 	
 	Ray shadowRay;
-	shadowRay.setOrigin(ray.calcPointAlongRay(t) + ((ray.calcPointAlongRay(t) - this->getPosition()) * (float)1e-2)); //Origin moved up with bias, to avoid Shadow Acne
+	shadowRay.setOrigin(ray.calcPointAlongRay(t) + ((ray.calcPointAlongRay(t) - this->getPosition()) * (float)1e-4)); //Origin moved up with bias, to avoid Shadow Acne
 	shadowRay.setDirection(lightDir);
 	
 	float temp = t;
@@ -82,12 +82,12 @@ glm::vec3 Sphere::calcColor(Ray& ray, Light& light, Plane& plane, std::vector<Sp
 	//SPHERE-SHADOW RAY INTERSECTION TEST
 	for (int i = 0; i < spheres.size(); i++) {
 		if (t <= lightDistance && spheres[i]->doesRayIntersect(shadowRay, temp)) 
-			return this->getAmbientColor();
+			return glm::vec3(0.0f);
 	}
 
 	//PLANE-SHADOW RAY INTERSECTION TEST
 	if (t <= lightDistance && plane.doesRayIntersect(shadowRay, temp) ) {
-		return this->getAmbientColor();
+		return glm::vec3(0.0f);
 	}
 
 	std::vector<int> indices = mesh.getIndices();
@@ -97,13 +97,11 @@ glm::vec3 Sphere::calcColor(Ray& ray, Light& light, Plane& plane, std::vector<Sp
 
 	//MESH-SHADOW RAY INTERSECTION TEST
 	if (t <= lightDistance && mesh.doesRayIntersect(shadowRay, indices, vertices, temp, closestIndexDummy)) {
-		return this->getAmbientColor();
+		return glm::vec3(0.0f);
 	}
 
 
-	//Ambient
-	glm::vec3 ambient = this->ambientColor;
-	
+
 	//Diffuse
 	glm::vec3 normal = glm::normalize(ray.calcPointAlongRay(t) - this->getPosition());
 	lightDir = glm::normalize(lightDir);
@@ -117,7 +115,7 @@ glm::vec3 Sphere::calcColor(Ray& ray, Light& light, Plane& plane, std::vector<Sp
 	glm::vec3 specular = (specularStrength * this->getSpecularColor()) * light.getSpecularColor();
 	
 
-	glm::vec3 result = ambient + diffuse + specular;
+	glm::vec3 result = diffuse + specular;
 
 	
 	return result;

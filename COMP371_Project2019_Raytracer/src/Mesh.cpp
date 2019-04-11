@@ -52,7 +52,7 @@ bool Mesh::doesRayIntersect(Ray& ray,std::vector<int>& indices, std::vector<glm:
 		normal = glm::normalize(glm::cross(v0v1, v0v2));
 
 		//Check if ray and plane are parallel and doing backface culling
-		if (glm::dot(normal, ray.getDirection()) == 0 || glm::dot(normal, ray.getDirection()) > 0)
+		if (glm::dot(normal, ray.getDirection()) >= 0)
 			continue;
 
 		//Plane equation
@@ -149,12 +149,12 @@ glm::vec3 Mesh::calcColor(Ray& ray, Light& light, Plane& plane, std::vector<Sphe
 	//SHADOWRAY-SPHERE INTERSECTION TEST
 	for (int i = 0; i < spheres.size(); i++) {
 		if (t <= lightDistance && spheres[i]->doesRayIntersect(shadowRay, temp))
-			return this->getAmbientColor();
+			return glm::vec3(0.0f);
 	}
 
 	//SHADOWRAY-PLANE INTERSECTION TEST
 	if (t <= lightDistance && plane.doesRayIntersect(shadowRay, temp)) {
-		return this->getAmbientColor();
+		return glm::vec3(0.0f);
 	}
 
 	std::vector<int> indices = mesh.getIndices();
@@ -163,14 +163,11 @@ glm::vec3 Mesh::calcColor(Ray& ray, Light& light, Plane& plane, std::vector<Sphe
 
 	//SHADOWRAY-MESH INTERSECTION TEST
 	if (t <= lightDistance && mesh.doesRayIntersect(shadowRay, indices, vertices, temp, closestIndexDummy)) {
-		return this->getAmbientColor();
+		return glm::vec3(0.0f);
 	}
 	
-	//Ambient
-	glm::vec3 ambient = this->getAmbientColor();
 
 	//Diffuse
-	std::cout << std::endl;
 	lightDir = glm::normalize(lightDir);
 	float diffuseStrength = glm::max(glm::dot(normal, lightDir), 0.0f);
 	glm::vec3 diffuse = (diffuseStrength * this->getDiffuseColor()) * light.getDiffuseColor();
@@ -182,7 +179,7 @@ glm::vec3 Mesh::calcColor(Ray& ray, Light& light, Plane& plane, std::vector<Sphe
 	glm::vec3 specular = (specularStrength * this->getSpecularColor()) * light.getSpecularColor();
 	
 
-	glm::vec3 result = ambient + diffuse + specular;
+	glm::vec3 result = diffuse + specular;
 
 	return result;
 }

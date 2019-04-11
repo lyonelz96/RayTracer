@@ -41,7 +41,7 @@ int main() {
 	std::vector<Light*> lights;
 	std::vector<Sphere*> spheres;
 
-	readScene("scenes\\mesh_scene1.txt", *camera, *mesh, *plane, lights, spheres);
+	readScene("scenes\\scene5.txt", *camera, *mesh, *plane, lights, spheres);
 
 
 	//Getting the information from the .obj file if any.
@@ -197,6 +197,8 @@ int main() {
 					spherePixelColor += spheres[closestObject.index]->calcColor(*ray, *lights[i], *plane, spheres, *mesh, closestObject.distance);
 				}
 
+				spherePixelColor += spheres[closestObject.index]->getAmbientColor();
+
 				spherePixelColor = glm::clamp(spherePixelColor, 0.0f, 1.0f);
 
 				image(x, y, 0) = spherePixelColor.x * 255.0f;
@@ -210,6 +212,8 @@ int main() {
 					planePixelColor += plane->calcColor(*ray, *lights[i], *plane, spheres, *mesh, closestObject.distance);
 				}
 
+				planePixelColor += plane->getAmbientColor();
+
 				planePixelColor = glm::clamp(planePixelColor, 0.0f, 1.0f);
 
 				image(x, y, 0) = planePixelColor.x * 255.0f;
@@ -222,6 +226,8 @@ int main() {
 				for (int i = 0; i < lights.size(); i++) {
 					meshPixelColor += mesh->calcColor(*ray, *lights[i], *plane, spheres, *mesh, closestObject.distance, closestIndex);
 				}
+
+				meshPixelColor += mesh->getAmbientColor();
 
 				meshPixelColor = glm::clamp(meshPixelColor, 0.0f, 1.0f);
 

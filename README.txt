@@ -10,8 +10,10 @@ References used:
 
 4) Ray-Tracing a Polygon Mesh: https://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-polygon-mesh
 
-5) Ray Tracing In One Weekend (e-book): https://github.com/petershirley/raytracinginoneweekend
+5) Shading, Lights and Shadows: https://www.scratchapixel.com/lessons/3d-basic-rendering/introduction-to-shading
 
-6) Professors Slides: http://poullis.org/courses/2019/Winter/COMP371/schedule.html
+6) Ray Tracing In One Weekend (e-book): https://github.com/petershirley/raytracinginoneweekend
+
+7) Professors Slides: http://poullis.org/courses/2019/Winter/COMP371/schedule.html
 
  
