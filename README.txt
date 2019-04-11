@@ -1,6 +1,12 @@
 Winter 2019 - Concordia University - COMP 371: Computer Graphics - Project: Raytracer
 
-References used:
+To read the files:
+Line 44 in Main.cpp: readScene method, make sure the file name/directory is correct.
+
+To read the .obj files:
+Line 54 in Main.cpp: fileNameS variable, make sure directory is the correct one.
+
+References:
 
 1) Ray-Triangle Intersection: https://www.cs.cornell.edu/courses/cs465/2003fa/homeworks/raytri.pdf
 

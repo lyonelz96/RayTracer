@@ -5,6 +5,7 @@
 
 Mesh::Mesh()
 {
+	this->fileName = "";
 }
 
 
