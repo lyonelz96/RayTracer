@@ -40,16 +40,26 @@ bool Sphere::doesRayIntersect(Ray& ray, float &t)
 		float t0 = (-b - std::sqrt(discriminant)) / (2.0 * a);
 		float t1 = (-b + std::sqrt(discriminant)) / (2.0 * a);
 
+		//Also checking for backface culling in all cases
 		if (t0 > 0.0 && t1 > 0.0) {
 			t = std::fminf(t0, t1); // Get the closest intersection point
+			if (glm::dot(ray.getDirection(), (ray.calcPointAlongRay(t) - this->getPosition())) > 0) {
+				return false;
+			}
 			return true;
 		}
 		else if (t0 < 0.0 && t1 > 0.0) {
 			t = t1;
+			if (glm::dot(ray.getDirection(), (ray.calcPointAlongRay(t) - this->getPosition())) > 0) {
+				return false;
+			}
 			return true;
 		}
 		else if (t1 < 0.0 && t0 > 0.0) {
 			t = t0;
+			if (glm::dot(ray.getDirection(), (ray.calcPointAlongRay(t) - this->getPosition())) > 0) {
+				return false;
+			}
 			return true;
 		}
 		return false;
@@ -68,11 +78,14 @@ glm::vec3 Sphere::calcColor(Ray& ray, Light& light, Plane& plane, std::vector<Sp
 	shadowRay.setDirection(lightDir);
 	
 	float temp = t;
+
+	//SPHERE-SHADOW RAY INTERSECTION TEST
 	for (int i = 0; i < spheres.size(); i++) {
 		if (t <= lightDistance && spheres[i]->doesRayIntersect(shadowRay, temp)) 
 			return this->getAmbientColor();
 	}
 
+	//PLANE-SHADOW RAY INTERSECTION TEST
 	if (t <= lightDistance && plane.doesRayIntersect(shadowRay, temp) ) {
 		return this->getAmbientColor();
 	}
@@ -81,6 +94,8 @@ glm::vec3 Sphere::calcColor(Ray& ray, Light& light, Plane& plane, std::vector<Sp
 	std::vector<glm::vec3> vertices = mesh.getVertices();
 	float closestIndexDummy = -1;
 
+
+	//MESH-SHADOW RAY INTERSECTION TEST
 	if (t <= lightDistance && mesh.doesRayIntersect(shadowRay, indices, vertices, temp, closestIndexDummy)) {
 		return this->getAmbientColor();
 	}

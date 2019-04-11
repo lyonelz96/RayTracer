@@ -14,15 +14,19 @@
 
 
 
-//Takes the objects section/attributes (Camera,Plane,Mesh etc...) and separates them
-//so they are read individually from an array/vector in a convenient way.
+/*
+Takes the objects section/attributes (Camera,Plane,Mesh etc...) and separates them
+so they are read individually from an array/vector in a convenient way.
+*/
 std::vector<std::string> dataSplit(std::string data);
 
-//Reads the scene file and extracts the attributes information belonging to each object in the scene.
+/*
+Reads the scene file and extracts the attributes information belonging to each object in the scene.
+*/
 void readScene(std::string fileName, Camera& camera, Mesh& mesh, Plane& plane, 
 	           std::vector<Light*>& lights, std::vector<Sphere*>& spheres);
 
-//Keeping track of the closest object hit by a ray
+//Keeps track of the closest object hit by a ray
 struct ClosestObject {
 	float distance;
 	std::string type;
@@ -37,34 +41,43 @@ int main() {
 	std::vector<Light*> lights;
 	std::vector<Sphere*> spheres;
 
-	readScene("scenes\\mesh_scene2.txt", *camera, *mesh, *plane, lights, spheres);
+	readScene("scenes\\mesh_scene1.txt", *camera, *mesh, *plane, lights, spheres);
+
 
 	//Getting the information from the .obj file if any.
 	std::vector<int> indices;
 	std::vector<glm::vec3> vertices;
 	std::vector<glm::vec3> normals;
 	std::vector<glm::vec2> UVs;
+
 	if (mesh->getFileName() != "") {
 		std::string fileNameS = "scenes\\" + mesh->getFileName();
 		const char* fileName = fileNameS.c_str();
 		loadOBJ(fileName, indices, vertices, normals, UVs);
+
+		mesh->setIndices(indices);
+		mesh->setVertices(vertices);
+		mesh->setNormals(normals);
+		mesh->setUVS(UVs);
 	}
 
-	mesh->setIndices(indices);
-	mesh->setVertices(vertices);
-	mesh->setNormals(normals);
-	mesh->setUVS(UVs);
 	
+	//Making the window smaller for debugging purposes (Faster render)
 	//camera->setFocalLength(camera->getFocalLength() / 2);
+
+
 	//------------------------CImg Stuff------------------------
 
 	int height = (2 *(std::tan((glm::radians(camera->getFOV() / 2))) * camera->getFocalLength()));
 	int width = camera->getAspectRatio() * height;
 
 
+	//PRINTING OUT INFO ABOUT OBJECTS ON THE SCENE FOR DEBUGGING PURPOSES
+
 	//HEIGHT, WIDTH
 	std::cout << "The height is: " << height << std::endl;
 	std::cout << "The width is: " << width << std::endl;
+	std::cout << std::endl;
 
 	//CAMERA
 	camera->toString();
@@ -111,14 +124,14 @@ int main() {
 			float v = (1 - 2 * NDCY) * std::tan(glm::radians(camera->getFOV()) / 2);
 			ray->setDirection(glm::vec3(u, v, -1));
 
-			//Resetting for every pixel
+			//Resetting info about closest object for every pixel
 			bool firstObjectIntersected = false;
 			closestObject.distance = -1;
 			closestObject.index = -1;
 			closestObject.type = "";
 
 			
-			//SPHERES
+			//SPHERES-RAY INTERSECTION TEST
 			for (int i = 0; i < spheres.size(); i++) {
 				if (spheres[i]->doesRayIntersect(*ray, t)) {
 
@@ -138,7 +151,7 @@ int main() {
 				}
 			}
 
-			//PLANES
+			//PLANES-RAY INTERSECTION TEST
 			if (plane->doesRayIntersect(*ray, t)) {
 
 				if (firstObjectIntersected == false) {
@@ -157,7 +170,7 @@ int main() {
 			}
 			
 
-			//MESH
+			//MESH-RAY INTERSECTION TEST
 			float closestIndex = -1;
 			if (mesh->doesRayIntersect(*ray, indices, vertices, t, closestIndex)) {
 

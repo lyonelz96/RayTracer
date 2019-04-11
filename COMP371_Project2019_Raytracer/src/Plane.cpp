@@ -15,8 +15,8 @@ Plane::~Plane()
 
 bool Plane::doesRayIntersect(Ray& ray, float& t)
 {
-	//No intersection, ray parallel to plane
-	if (glm::dot(ray.getDirection(), normal) == 0) {
+	//No intersection, ray parallel to plane and checking for backface culling
+	if (glm::dot(ray.getDirection(), normal) == 0 || glm::dot(ray.getDirection(),normal) > 0) {
 		return false;
 	}
 
@@ -46,12 +46,15 @@ glm::vec3 Plane::calcColor(Ray& ray, Light& light, Plane& plane, std::vector<Sph
 	shadowRay.setDirection(lightDir);
 
 	float temp = t;
+
+	//SPHERE-SHADOW RAY INTERSECTION TEST
 	for (int i = 0; i < spheres.size(); i++) {
 		if (t <= lightDistance && spheres[i]->doesRayIntersect(shadowRay, temp) ) {
 			return this->getAmbientColor();
 		}
 	}
 
+	//PLANE-SHADOW RAY INTERSECTION TEST
 	if (t <= lightDistance && plane.doesRayIntersect(shadowRay, temp) ) {
 		return this->getAmbientColor();
 	}
@@ -60,6 +63,7 @@ glm::vec3 Plane::calcColor(Ray& ray, Light& light, Plane& plane, std::vector<Sph
 	std::vector<glm::vec3> vertices = mesh.getVertices();
 	float closestIndexDummy = -1;
 
+	//MESH-SHADOW RAY INTERSECTION TEST
 	if (t <= lightDistance && mesh.doesRayIntersect(shadowRay, indices, vertices, temp, closestIndexDummy)) {
 		return this->getAmbientColor();
 	}
